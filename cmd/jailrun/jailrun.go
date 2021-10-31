@@ -18,6 +18,12 @@ func run() error {
 	if len(os.Args) > 1 {
 		if os.Args[1] == "proxy" {
 			return server.RunProxy(cfg)
+		} else if os.Args[1] == "driver" {
+			if err = config.DoMounts(); err != nil {
+				return err
+			}
+
+			return server.RunDriver(cfg)
 		}
 	}
 

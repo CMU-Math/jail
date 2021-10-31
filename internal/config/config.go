@@ -30,13 +30,16 @@ type Config struct {
 	Pids       uint64   `env:"JAIL_PIDS" envDefault:"5"`
 	Mem        size     `env:"JAIL_MEM" envDefault:"5M"`
 	Cpu        uint32   `env:"JAIL_CPU" envDefault:"100"`
+	BinaryPath       string   `env:"JAIL_BINARY_PATH" envDefault:"/srv/app/run"`
 	Pow        uint32   `env:"JAIL_POW"`
 	Port       uint32   `env:"JAIL_PORT" envDefault:"5000"`
 	Syscalls   []string `env:"JAIL_SYSCALLS"`
 	TmpSize    size     `env:"JAIL_TMP_SIZE"`
 }
 
-const NsjailConfigPath = "/tmp/nsjail.cfg"
+func GetNsjailConfigPath() string {
+	return fmt.Sprintf("/tmp/nsjail.%d.cfg", os.Getpid())
+}
 const CgroupV1Root = "/jail/cgroup/v1"
 
 func (c *Config) SetConfig(msg *nsjail.NsJailConfig) {
@@ -56,6 +59,13 @@ func (c *Config) SetConfig(msg *nsjail.NsJailConfig) {
 		Nodev:  proto.Bool(true),
 		Nosuid: proto.Bool(true),
 	}}
+	msg.Mount = append(msg.Mount, &nsjail.MountPt{
+		Src:    proto.String(c.BinaryPath),
+		Dst:    proto.String("/app/run"),
+		IsBind: proto.Bool(true),
+		Nodev:  proto.Bool(true),
+		Nosuid: proto.Bool(true),
+	})
 	msg.Hostname = proto.String("app")
 	msg.Cwd = proto.String("/app")
 	msg.ExecBin = &nsjail.Exe{
@@ -102,7 +112,7 @@ func WriteConfig(msg *nsjail.NsJailConfig) error {
 	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(NsjailConfigPath, content, 0644); err != nil {
+	if err := os.WriteFile(GetNsjailConfigPath(), content, 0644); err != nil {
 		return err
 	}
 	return nil

@@ -14,7 +14,7 @@ import (
 const nsjailPath = "/jail/nsjail"
 
 func runNsjailChild(errCh chan<- error) {
-	cmd := exec.Command(nsjailPath, "-C", config.NsjailConfigPath)
+	cmd := exec.Command(nsjailPath, "-C", config.GetNsjailConfigPath())
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
@@ -28,7 +28,7 @@ func execNsjail(cfg *config.Config) error {
 	if err := privs.DropPrivs(cfg); err != nil {
 		return err
 	}
-	if err := unix.Exec(nsjailPath, []string{nsjailPath, "-C", config.NsjailConfigPath}, os.Environ()); err != nil {
+	if err := unix.Exec(nsjailPath, []string{nsjailPath, "-C", config.GetNsjailConfigPath()}, os.Environ()); err != nil {
 		return fmt.Errorf("exec nsjail: %w", err)
 	}
 	return nil

@@ -354,6 +354,7 @@ var seccompRules = []seccompRule{{
 		"uname",
 		"unlink",
 		"unlinkat",
+		"unshare",
 		"utime",
 		"utimensat",
 		"utimensat_time64",
