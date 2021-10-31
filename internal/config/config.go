@@ -14,7 +14,6 @@ import (
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 )
-
 type size uint64
 
 func (s *size) UnmarshalText(t []byte) error {
@@ -27,6 +26,7 @@ type Config struct {
 	Time       uint32   `env:"JAIL_TIME" envDefault:"20"`
 	Conns      uint32   `env:"JAIL_CONNS"`
 	ConnsPerIp uint32   `env:"JAIL_CONNS_PER_IP"`
+	Id         string   `env:"JAIL_ID" envDefault:"NSJAIL"`
 	Pids       uint64   `env:"JAIL_PIDS" envDefault:"5"`
 	Mem        size     `env:"JAIL_MEM" envDefault:"5M"`
 	Cpu        uint32   `env:"JAIL_CPU" envDefault:"100"`
@@ -37,9 +37,10 @@ type Config struct {
 }
 
 const NsjailConfigPath = "/tmp/nsjail.cfg"
+const CgroupV1Root = "/jail/cgroup/v1"
 
 func (c *Config) SetConfig(msg *nsjail.NsJailConfig) {
-	msg.Mode = nsjail.Mode_LISTEN.Enum()
+	msg.Mode = nsjail.Mode_EXECVE.Enum()
 	msg.TimeLimit = &c.Time
 	msg.RlimitAsType = nsjail.RLimit_HARD.Enum()
 	msg.RlimitCpuType = nsjail.RLimit_HARD.Enum()
@@ -82,17 +83,21 @@ func (c *Config) SetConfig(msg *nsjail.NsJailConfig) {
 
 const tmpMountFlags = uintptr(unix.MS_NOSUID | unix.MS_NODEV | unix.MS_NOEXEC | unix.MS_RELATIME)
 
-func mountTmp() error {
-	if err := unix.Mount("", "/tmp", "tmpfs", tmpMountFlags, ""); err != nil {
+func DoMounts() error {
+	if err := mountTmpFS("/tmp"); err != nil {
+		return err
+	}
+	return nil
+}
+
+func mountTmpFS(path string) error {
+	if err := unix.Mount("", path, "tmpfs", tmpMountFlags, ""); err != nil {
 		return fmt.Errorf("mount tmpfs: %w", err)
 	}
 	return nil
 }
 
 func WriteConfig(msg *nsjail.NsJailConfig) error {
-	if err := mountTmp(); err != nil {
-		return err
-	}
 	content, err := prototext.Marshal(msg)
 	if err != nil {
 		return err

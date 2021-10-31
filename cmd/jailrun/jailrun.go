@@ -15,19 +15,21 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if len(os.Args) > 1 && os.Args[1] == "proxy" {
-		return server.RunProxy(cfg)
+	if len(os.Args) > 1 {
+		if os.Args[1] == "proxy" {
+			return server.RunProxy(cfg)
+		}
 	}
+
 	cgroup, err := cgroup.ReadCgroup()
 	if err != nil {
 		return err
 	}
-	if err := cgroup.Mount(); err != nil {
+	msg := &nsjail.NsJailConfig{}
+	if err := cgroup.MountAndSetConfig(cfg.Id, msg); err != nil {
 		return fmt.Errorf("delegate cgroup: %w", err)
 	}
-	msg := &nsjail.NsJailConfig{}
 	cfg.SetConfig(msg)
-	cgroup.SetConfig(msg)
 	if err := config.WriteConfig(msg); err != nil {
 		return err
 	}

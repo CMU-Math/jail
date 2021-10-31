@@ -12,7 +12,7 @@ import (
 
 type cgroup2 struct{}
 
-func (c *cgroup2) Mount() error {
+func (c *cgroup2) MountAndSetConfig(id string, msg *nsjail.NsJailConfig) error {
 	dest := rootPath + "/unified"
 	if err := unix.Mount("", dest, "cgroup2", mountFlags, ""); err != nil {
 		return fmt.Errorf("mount cgroup2 to %s: %w", dest, err)
@@ -40,10 +40,13 @@ func (c *cgroup2) Mount() error {
 	if err := os.Chown(runPath, privs.UserId, privs.UserId); err != nil {
 		return err
 	}
+
+	c.setConfig(msg)
+
 	return nil
 }
 
-func (c *cgroup2) SetConfig(msg *nsjail.NsJailConfig) {
+func (c *cgroup2) setConfig(msg *nsjail.NsJailConfig) {
 	msg.UseCgroupv2 = proto.Bool(true)
 	msg.Cgroupv2Mount = proto.String(rootPath + "/unified/run")
 }

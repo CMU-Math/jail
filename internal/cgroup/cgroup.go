@@ -11,8 +11,7 @@ import (
 )
 
 type Cgroup interface {
-	Mount() error
-	SetConfig(*nsjail.NsJailConfig)
+	MountAndSetConfig(string, *nsjail.NsJailConfig) error
 }
 
 const (
@@ -32,7 +31,7 @@ func ReadCgroup() (Cgroup, error) {
 		parts := strings.SplitN(s.Text(), ":", 3)
 		entry := &cgroup1Entry{
 			controllers: parts[1],
-			parent:      parts[2] + "/NSJAIL",
+			parent:      parts[2],
 		}
 		switch parts[1] {
 		case "pids":
@@ -46,5 +45,6 @@ func ReadCgroup() (Cgroup, error) {
 	if v1.pids == nil && v1.mem == nil && v1.cpu == nil {
 		return &cgroup2{}, nil
 	}
+	v1.Init()
 	return v1, nil
 }
