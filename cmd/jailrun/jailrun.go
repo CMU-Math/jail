@@ -45,7 +45,11 @@ func run() error {
 	if err := config.RunHook(); err != nil {
 		return err
 	}
-	return server.ExecServer(cfg)
+	if err := server.ExecServer(cfg); err != nil {
+		return err
+	}
+	return nil
+	//return cgroup.Cleanup()
 }
 
 func main() {

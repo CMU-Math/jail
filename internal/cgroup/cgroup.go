@@ -12,6 +12,7 @@ import (
 
 type Cgroup interface {
 	MountAndSetConfig(string, *nsjail.NsJailConfig) error
+	Cleanup() error
 }
 
 const (

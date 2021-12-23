@@ -50,3 +50,7 @@ func (c *cgroup2) setConfig(msg *nsjail.NsJailConfig) {
 	msg.UseCgroupv2 = proto.Bool(true)
 	msg.Cgroupv2Mount = proto.String(rootPath + "/unified/run")
 }
+
+func (c *cgroup2) Cleanup() error {
+	return nil
+}

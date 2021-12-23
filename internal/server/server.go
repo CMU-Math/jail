@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 
@@ -35,13 +36,20 @@ func makeProgram(cmd *exec.Cmd) program {
 	return ret
 }
 
+const playerMntPath = "/mnt/players"
+const graderMntPath = "/mnt/grader"
+
 func RunDriver(cfg *config.Config) error {
-	programs := make([]program, 10)
-	for i := 0; i < 10; i++ {
+	playerFiles, _ := ioutil.ReadDir(playerMntPath)
+
+	numPlayers := len(playerFiles)
+
+	programs := make([]program, len(playerFiles))
+	for i := 0; i < numPlayers; i++ {
 		cmd := exec.Command("/jail/run")
 		cmd.Env = append(os.Environ(),
 			fmt.Sprintf("JAIL_ID=%d", i),
-			"JAIL_BINARY_PATH=/mnt/player",
+			"JAIL_BINARY_PATH=" + playerMntPath + "/" + playerFiles[i].Name(),
 		)
 
 		programs[i] = makeProgram(cmd)
@@ -55,7 +63,7 @@ func RunDriver(cfg *config.Config) error {
 		cmd := exec.Command("/jail/run")
 		cmd.Env = append(os.Environ(),
 			"JAIL_ID=grader",
-			"JAIL_BINARY_PATH=/mnt/grader",
+			"JAIL_BINARY_PATH=" + graderMntPath,
 		)
 
 		grader := makeProgram(cmd)
@@ -65,7 +73,7 @@ func RunDriver(cfg *config.Config) error {
 		}
 
 		rd := grader.stdout
-		grader.stdin.Write([]byte("10\n"))
+		grader.stdin.Write([]byte(fmt.Sprintf("%d\n", numPlayers)))
 		for {
 			line, _, err := rd.ReadLine()
 			if err != nil {
@@ -105,19 +113,6 @@ func RunDriver(cfg *config.Config) error {
 				return nil
 			}
 		}
-	}
-
-
-
-
-	for i := 0; i < 10; i++ {
-		programs[i].stdin.Write([]byte("1\n1\n"))
-		programs[i].stdin.Close()
-	}
-
-	for i := 0; i < 10; i++ {
-		cmdBytes, _ := io.ReadAll(programs[i].stderr)
-		fmt.Println(string(cmdBytes))
 	}
 
 	return nil

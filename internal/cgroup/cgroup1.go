@@ -2,6 +2,7 @@ package cgroup
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 
@@ -21,6 +22,8 @@ type cgroup1 struct {
 	pids *cgroup1Entry
 	mem  *cgroup1Entry
 	cpu  *cgroup1Entry
+
+	entries []string
 }
 
 func (c *cgroup1) Init() error {
@@ -47,8 +50,10 @@ func mountCgroup1Entry(name string, entry *cgroup1Entry) error {
 	return nil
 }
 
-func createCgroup1Delegate(id string, name string, entry *cgroup1Entry) error {
+func (c *cgroup1) createCgroup1Delegate(id string, name string, entry *cgroup1Entry) error {
 	delegated := path.Join(config.CgroupV1Root, name, entry.parent, id)
+	c.entries = append(c.entries, delegated)
+
 	if err := os.Mkdir(delegated, 0755); err != nil {
 		return err
 	}
@@ -59,13 +64,13 @@ func createCgroup1Delegate(id string, name string, entry *cgroup1Entry) error {
 }
 
 func (c *cgroup1) MountAndSetConfig(id string, msg *nsjail.NsJailConfig) error {
-	if err := createCgroup1Delegate(id, "pids", c.pids); err != nil {
+	if err := c.createCgroup1Delegate(id, "pids", c.pids); err != nil {
 		return err
 	}
-	if err := createCgroup1Delegate(id, "mem", c.mem); err != nil {
+	if err := c.createCgroup1Delegate(id, "mem", c.mem); err != nil {
 		return err
 	}
-	if err := createCgroup1Delegate(id, "cpu", c.cpu); err != nil {
+	if err := c.createCgroup1Delegate(id, "cpu", c.cpu); err != nil {
 		return err
 	}
 
@@ -86,4 +91,21 @@ func (c *cgroup1) setConfig(id string, msg *nsjail.NsJailConfig) {
 	msg.CgroupCpuMount = proto.String(config.CgroupV1Root + "/cpu")
 	tmp3 := path.Join(c.cpu.parent, id)
 	msg.CgroupCpuParent = &tmp3
+}
+
+func (c *cgroup1) Cleanup() error {
+	for _, entry := range c.entries {
+		subentries, _ := ioutil.ReadDir(entry)
+		for _, subentry := range subentries {
+			if subentry.IsDir() {
+				if err := os.Remove(entry + "/" + subentry.Name()); err != nil {
+					return err
+				}
+			}
+		}
+		if err := os.Remove(entry); err != nil {
+			return err
+		}
+	}
+	return nil
 }
