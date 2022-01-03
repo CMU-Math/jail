@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/redpwn/jail/internal/privs"
-	"github.com/redpwn/jail/internal/proto/nsjail"
+	"github.com/CMU-Math/grader/internal/privs"
+	"github.com/CMU-Math/grader/internal/proto/nsjail"
 	"golang.org/x/sys/unix"
 	"google.golang.org/protobuf/proto"
 )
@@ -49,8 +49,4 @@ func (c *cgroup2) MountAndSetConfig(id string, msg *nsjail.NsJailConfig) error {
 func (c *cgroup2) setConfig(msg *nsjail.NsJailConfig) {
 	msg.UseCgroupv2 = proto.Bool(true)
 	msg.Cgroupv2Mount = proto.String(rootPath + "/unified/run")
-}
-
-func (c *cgroup2) Cleanup() error {
-	return nil
 }

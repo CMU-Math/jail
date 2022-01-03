@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "proto/;gen";
+
+package ping;
+
+service GraderService {
+  rpc Grade(Request) returns (Response) {}
+}
+
+message Executable {
+	bytes code = 1;
+}
+
+message Player {
+	string id = 1;
+	Executable executable = 2;
+}
+
+message Request {
+	uint32 iters = 1;
+	repeated Player players = 2;
+	Executable grader = 3;
+}
+
+message Response {
+  repeated string response = 1;
+}
+

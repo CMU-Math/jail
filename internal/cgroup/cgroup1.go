@@ -6,9 +6,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/redpwn/jail/internal/config"
-	"github.com/redpwn/jail/internal/privs"
-	"github.com/redpwn/jail/internal/proto/nsjail"
+	"github.com/CMU-Math/grader/internal/config"
+	"github.com/CMU-Math/grader/internal/privs"
+	"github.com/CMU-Math/grader/internal/proto/nsjail"
 	"golang.org/x/sys/unix"
 	"google.golang.org/protobuf/proto"
 )
@@ -93,18 +93,22 @@ func (c *cgroup1) setConfig(id string, msg *nsjail.NsJailConfig) {
 	msg.CgroupCpuParent = &tmp3
 }
 
-func (c *cgroup1) Cleanup() error {
-	for _, entry := range c.entries {
-		subentries, _ := ioutil.ReadDir(entry)
-		for _, subentry := range subentries {
-			if subentry.IsDir() {
-				if err := os.Remove(entry + "/" + subentry.Name()); err != nil {
-					return err
-				}
+func CleanupV1() error {
+	cleanupV1Internal(config.CgroupV1Root)
+	return nil
+}
+
+func cleanupV1Internal(dir string) error {
+	subentries, _ := ioutil.ReadDir(dir)
+	for _, subentry := range subentries {
+		if subentry.IsDir() {
+			nextPath := dir + "/" + subentry.Name()
+			if err := cleanupV1Internal(nextPath); err != nil {
+				//return err
 			}
-		}
-		if err := os.Remove(entry); err != nil {
-			return err
+			if err := os.Remove(nextPath); err != nil {
+				//return err
+			}
 		}
 	}
 	return nil

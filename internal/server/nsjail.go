@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/redpwn/jail/internal/config"
-	"github.com/redpwn/jail/internal/privs"
+	"github.com/CMU-Math/grader/internal/config"
+	"github.com/CMU-Math/grader/internal/privs"
 	"golang.org/x/sys/unix"
 )
 

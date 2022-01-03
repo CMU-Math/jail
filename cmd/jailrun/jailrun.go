@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/redpwn/jail/internal/cgroup"
-	"github.com/redpwn/jail/internal/config"
-	"github.com/redpwn/jail/internal/proto/nsjail"
-	"github.com/redpwn/jail/internal/server"
+	"github.com/CMU-Math/grader/internal/cgroup"
+	"github.com/CMU-Math/grader/internal/config"
+	"github.com/CMU-Math/grader/internal/proto/nsjail"
+	"github.com/CMU-Math/grader/internal/server"
 )
 
 func run() error {
@@ -23,7 +23,7 @@ func run() error {
 				return err
 			}
 
-			return server.RunDriver(cfg)
+			return server.RunGRPC()
 		}
 	}
 

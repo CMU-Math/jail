@@ -9,7 +9,7 @@ import (
 
 	"github.com/caarlos0/env/v6"
 	"github.com/docker/go-units"
-	"github.com/redpwn/jail/internal/proto/nsjail"
+	"github.com/CMU-Math/grader/internal/proto/nsjail"
 	"golang.org/x/sys/unix"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
@@ -91,7 +91,7 @@ func (c *Config) SetConfig(msg *nsjail.NsJailConfig) {
 	}
 }
 
-const tmpMountFlags = uintptr(unix.MS_NOSUID | unix.MS_NODEV | unix.MS_NOEXEC | unix.MS_RELATIME)
+const tmpMountFlags = uintptr(unix.MS_NOSUID | unix.MS_NODEV | unix.MS_RELATIME)
 
 func DoMounts() error {
 	if err := mountTmpFS("/tmp"); err != nil {

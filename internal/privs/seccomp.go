@@ -3,7 +3,7 @@ package privs
 import (
 	"fmt"
 
-	"github.com/redpwn/jail/internal/config"
+	"github.com/CMU-Math/grader/internal/config"
 	seccomp "github.com/seccomp/libseccomp-golang"
 	"golang.org/x/sys/unix"
 )

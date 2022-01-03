@@ -6,13 +6,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/redpwn/jail/internal/proto/nsjail"
+	"github.com/CMU-Math/grader/internal/proto/nsjail"
 	"golang.org/x/sys/unix"
 )
 
 type Cgroup interface {
 	MountAndSetConfig(string, *nsjail.NsJailConfig) error
-	Cleanup() error
 }
 
 const (

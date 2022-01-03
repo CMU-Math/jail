@@ -12,8 +12,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/redpwn/jail/internal/config"
-	"github.com/redpwn/jail/internal/privs"
+	"github.com/CMU-Math/grader/internal/config"
+	"github.com/CMU-Math/grader/internal/privs"
 	"github.com/redpwn/pow"
 	"golang.org/x/sys/unix"
 	"inet.af/netaddr"
